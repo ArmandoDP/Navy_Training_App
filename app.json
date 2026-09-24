@@ -2,29 +2,74 @@
   "expo": {
     "name": "navy-app",
     "slug": "navy-app",
-    "version": "1.0.0",
+    "scheme": "navyapp",
+    "extra": {
+      "eas": {
+        "projectId": "f6cc94e2-5033-4e57-8672-80d24b674b3d"
+      }
+    },
+    "version": "2.5.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash-icon.jpeg",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#171B24"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.navytrainingcenter.app",
+      "buildNumber": "38",
+      "infoPlist": {
+        "NSCameraUsageDescription": "La app necesita acceso a la cámara para escanear códigos QR de check-in.",
+        "NSPhotoLibraryUsageDescription": "La app necesita acceso a tus fotos para actualizar tu foto de perfil.",
+        "NSMicrophoneUsageDescription": "La app necesita acceso al micrófono para funciones de video.",
+        "NSLocationWhenInUseUsageDescription": "La app necesita tu ubicación para mostrarte la sucursal más cercana.",
+        "NSFaceIDUsageDescription": "Usa Face ID para acceder rápidamente a Navy Training Center",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.navytrainingcenter.app",
+      "versionCode": 9,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/adaptive-icon.jpeg",
+        "backgroundColor": "#171B24"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Usa Face ID para acceder rápidamente a Navy Training Center"
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#171B24"
+        }
+      ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f6cc94e2-5033-4e57-8672-80d24b674b3d"
     }
   }
 }
