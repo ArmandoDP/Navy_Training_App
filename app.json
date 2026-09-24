@@ -8,7 +8,7 @@
         "projectId": "f6cc94e2-5033-4e57-8672-80d24b674b3d"
       }
     },
-    "version": "2.5.1",
+    "version": "2.6.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,7 +21,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.navytrainingcenter.app",
-      "buildNumber": "38",
+      "buildNumber": "39",
       "infoPlist": {
         "NSCameraUsageDescription": "La app necesita acceso a la cámara para escanear códigos QR de check-in.",
         "NSPhotoLibraryUsageDescription": "La app necesita acceso a tus fotos para actualizar tu foto de perfil.",
@@ -33,7 +33,7 @@
     },
     "android": {
       "package": "com.navytrainingcenter.app",
-      "versionCode": 9,
+      "versionCode": 10,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.jpeg",
         "backgroundColor": "#171B24"
@@ -50,6 +50,7 @@
     },
     "plugins": [
       "expo-font",
+      "expo-updates",
       [
         "expo-local-authentication",
         {
@@ -71,7 +72,8 @@
     "updates": {
       "url": "https://u.expo.dev/f6cc94e2-5033-4e57-8672-80d24b674b3d",
       "enabled": true,
-      "checkAutomatically": "ON_LOAD"
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     }
   }
 }
