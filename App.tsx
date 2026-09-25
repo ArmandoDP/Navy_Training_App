@@ -119,21 +119,21 @@ function MainTabs() {
   )
 }
 
-export default function App() {
-  useEffect(() => {
-    const checkUpdate = async () => {
-      try {
-        const update = await Updates.checkForUpdateAsync()
-        if (update.isAvailable) {
-          await Updates.fetchUpdateAsync()
-          await Updates.reloadAsync()
-        }
-      } catch (e) {
-        console.log('Error checking update:', e)
+useEffect(() => {
+  const checkUpdate = async () => {
+    try {
+      if (__DEV__) return  // No verificar en desarrollo
+      const update = await Updates.checkForUpdateAsync()
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync()
+        await Updates.reloadAsync()
       }
+    } catch (e) {
+      console.log('Error checking update:', e)
     }
-    if (!__DEV__) checkUpdate()
-  }, [])
+  }
+  checkUpdate()
+}, [])  // Solo una vez al montar
   
   const [session,        setSession]        = useState<any>(null)
   const [ready,          setReady]          = useState(false)
