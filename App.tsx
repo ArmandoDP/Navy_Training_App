@@ -6,7 +6,6 @@ import { NavigationContainerRef }      from '@react-navigation/native'
 import * as SplashScreen               from 'expo-splash-screen'
 import * as SecureStore                from 'expo-secure-store'
 import * as Application                from 'expo-application'
-import * as Updates from 'expo-updates'
 import * as Font                       from 'expo-font'
 import { Text, Linking }               from 'react-native'
 import { supabase }                    from './lib/supabase'
@@ -119,22 +118,7 @@ function MainTabs() {
   )
 }
 
-// useEffect(() => {
-//   const checkUpdate = async () => {
-//     try {
-//       if (__DEV__) return
-//       const update = await Updates.checkForUpdateAsync()
-//       if (update.isAvailable) {
-//         await Updates.fetchUpdateAsync()
-//         await Updates.reloadAsync()
-//       }
-//     } catch (e) {
-//       console.log('Error checking update:', e)
-//     }
-//   }
-//   checkUpdate()
-// }, [])
-  
+export default function App() {
   const [session,        setSession]        = useState<any>(null)
   const [ready,          setReady]          = useState(false)
   const [showBienvenido, setShowBienvenido] = useState(false)
@@ -150,13 +134,10 @@ function MainTabs() {
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-
-      // Detectar nueva instalación por build version
       const buildGuardado = await SecureStore.getItemAsync('navy_build_version').catch(() => null)
       const buildActual   = Application.nativeBuildVersion
 
       if (buildGuardado !== buildActual) {
-        // Nueva instalación — cerrar sesión limpiamente
         await supabase.auth.signOut().catch(() => {})
         await SecureStore.setItemAsync('navy_build_version', buildActual || '').catch(() => {})
         setSession(null)
@@ -170,12 +151,8 @@ function MainTabs() {
 
     supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
-      if (event === 'SIGNED_IN') {
-        setShowBienvenido(true)
-      }
-      if (event === 'SIGNED_OUT') {
-        setShowBienvenido(false)
-      }
+      if (event === 'SIGNED_IN')  setShowBienvenido(true)
+      if (event === 'SIGNED_OUT') setShowBienvenido(false)
     })
   }, [])
 
