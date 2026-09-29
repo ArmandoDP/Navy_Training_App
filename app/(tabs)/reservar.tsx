@@ -231,7 +231,7 @@ export default function ReservarScreen() {
     const fin    = new Date(dia); fin.setHours(23,59,59,999)
 
     const { data } = await supabase.from('clases')
-      .select('*, staff(id, nombre, primer_apellido), sucursales(nombre), rooms(id, nombre, ancho, alto, layout, room_spots(*)), reservas(id, estatus, spot_id, cliente_id)')
+      .select('*, totalpass_occurrence_uuid, wellhub_slot_id, wellhub_class_id, staff(id, nombre, primer_apellido), sucursales(nombre), rooms(id, nombre, ancho, alto, layout, room_spots(*)), reservas(id, estatus, spot_id, cliente_id)')
       .eq('sucursal_id', sucursalId)
       .eq('estado', 'Activa')
       .gte('horario', inicio.toISOString())
