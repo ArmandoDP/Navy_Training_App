@@ -374,11 +374,11 @@ export default function ReservarScreen() {
         // Tomar siguiente membresía activa
         const { data: nuevaMemb } = await supabase
           .from('membresias')
-          .select('*, paquetes(id, nombre, clases_incluidas, acceso_sucursal_hermana)')
+          .select('*, paquetes(id, nombre, clases_incluidas, acceso_sucursal_hermana, tipo)')
           .eq('cliente_id', clienteId)
           .eq('estatus', 'Activa')
           .gte('fecha_fin', new Date().toISOString().split('T')[0])
-          .order('fecha_fin', { ascending: false })
+          .order('fecha_inicio', { ascending: true })  // ← la más próxima a iniciar
           .limit(1)
           .single()
 
@@ -388,8 +388,10 @@ export default function ReservarScreen() {
         await supabase
           .from('clientes')
           .update({
-            plan:       nuevaMemb?.paquetes?.nombre || '',
-            paquete_id: nuevaMemb?.paquetes?.id || null,
+            plan:            nuevaMemb?.paquetes?.nombre || '',
+            paquete_id:      nuevaMemb?.paquetes?.id || null,
+            estatus:         nuevaMemb ? 'Activo' : 'Activo', // ← nunca marcar Vencido
+            fecha_venc_plan: nuevaMemb?.fecha_fin || null,
           })
           .eq('id', clienteId)
 
