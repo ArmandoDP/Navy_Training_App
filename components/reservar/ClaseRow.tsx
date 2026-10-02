@@ -11,6 +11,12 @@ interface Props {
 export default function ClaseRow({ clase, reservada, onPress }: Props) {
   const scale = useRef(new Animated.Value(1)).current
 
+  const ahora    = new Date()
+  const horario  = new Date(clase.horario)
+  const minDiff  = Math.round((horario.getTime() - ahora.getTime()) / 60000)
+  const pasada   = minDiff < -clase.duracion_minutos
+  const enCurso  = minDiff <= 0 && !pasada
+
   const ocupados    = clase.reservas?.filter((r: any) => r.estatus !== 'Cancelada').length || 0
   const disponibles = clase.capacidad_max - ocupados
   const llena       = disponibles <= 0
@@ -28,28 +34,44 @@ export default function ClaseRow({ clase, reservada, onPress }: Props) {
   const handlePressIn  = () => Animated.spring(scale, { toValue: 0.98, useNativeDriver: true, speed: 50 }).start()
   const handlePressOut = () => Animated.spring(scale, { toValue: 1,    useNativeDriver: true, speed: 50 }).start()
 
+  const disabled = (llena && !reservada) || (pasada && !reservada)
+
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
       <TouchableOpacity
-        style={[s.card, reservada && s.cardReservada, llena && !reservada && s.cardLlena]}
+        style={[
+          s.card,
+          reservada && s.cardReservada,
+          llena && !reservada && !pasada && s.cardLlena,
+          pasada && !reservada && s.cardPasada,
+          enCurso && !reservada && s.cardEnCurso,
+        ]}
         onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={llena && !reservada}
+        onPressIn={!disabled ? handlePressIn : undefined}
+        onPressOut={!disabled ? handlePressOut : undefined}
+        disabled={disabled}
         activeOpacity={1}>
 
         {/* Borde accent izquierdo */}
-        <View style={[s.accent, { backgroundColor: reservada ? '#22c55e' : llena ? '#ef4444' : '#171B24' }]} />
+        <View style={[s.accent, {
+          backgroundColor: enCurso ? '#22c55e' : reservada ? '#22c55e' : llena ? '#ef4444' : pasada ? '#e5e7eb' : '#171B24'
+        }]} />
 
         {/* Hora */}
         <View style={s.horaCol}>
-          <Text style={[s.hora, reservada && s.horaReservada]}>{hora}</Text>
+          <Text style={[s.hora, reservada && s.horaReservada, pasada && !reservada && s.horaPasada]}>
+            {hora}
+          </Text>
           <Text style={[s.dur, reservada && { color: '#4b5563' }]}>{clase.duracion_minutos}m</Text>
         </View>
 
         {/* Contenido */}
         <View style={{ flex: 1, gap: 4 }}>
-          <Text style={[s.nombre, reservada && s.nombreReservada]} numberOfLines={1}>
+          <Text style={[
+            s.nombre,
+            reservada && s.nombreReservada,
+            pasada && !reservada && s.nombrePasada,
+          ]} numberOfLines={1}>
             {clase.nombre_clase}
           </Text>
 
@@ -69,7 +91,7 @@ export default function ClaseRow({ clase, reservada, onPress }: Props) {
             )}
           </View>
 
-          {!reservada && (
+          {!reservada && !pasada && (
             <View style={s.barBg}>
               <View style={[s.barFill, { width: `${pct}%` as any, backgroundColor: barColor }]} />
             </View>
@@ -77,8 +99,17 @@ export default function ClaseRow({ clase, reservada, onPress }: Props) {
         </View>
 
         {/* Estado derecha */}
-        <View style={{ alignItems: 'flex-end', gap: 6, minWidth: 56 }}>
-          {reservada ? (
+        <View style={{ alignItems: 'flex-end', gap: 6, minWidth: 72 }}>
+          {pasada && !reservada ? (
+            <View style={s.badgePasada}>
+              <Text style={s.badgePasadaText}>FINALIZADA</Text>
+            </View>
+          ) : enCurso && !reservada ? (
+            <View style={s.badgeEnCurso}>
+              <View style={s.puntito} />
+              <Text style={s.badgeEnCursoText}>EN CURSO</Text>
+            </View>
+          ) : reservada ? (
             <View style={s.badgeReservada}>
               <Ionicons name="checkmark" size={10} color="#22c55e" />
               <Text style={s.badgeReservadaText}>LISTA</Text>
@@ -98,7 +129,7 @@ export default function ClaseRow({ clase, reservada, onPress }: Props) {
               <Text style={s.spotsTotal}>{clase.capacidad_max}</Text>
             </View>
           )}
-          {!llena && (
+          {!llena && !pasada && (
             <Ionicons name="chevron-forward" size={14} color={reservada ? '#374151' : '#d1d5db'} />
           )}
         </View>
@@ -134,6 +165,15 @@ const s = StyleSheet.create({
   cardLlena: {
     opacity: 0.4,
   },
+  cardPasada: {
+    opacity:         0.45,
+    backgroundColor: '#f8fafc',
+    borderColor:     '#f1f5f9',
+  },
+  cardEnCurso: {
+    borderColor: '#22c55e',
+    borderWidth: 1.5,
+  },
   accent: {
     position:     'absolute',
     left:         0,
@@ -155,6 +195,9 @@ const s = StyleSheet.create({
   horaReservada: {
     color: '#93c5fd',
   },
+  horaPasada: {
+    color: '#9ca3af',
+  },
   dur: {
     fontSize:   11,
     color:      '#9ca3af',
@@ -170,18 +213,21 @@ const s = StyleSheet.create({
   nombreReservada: {
     color: '#f1f5f9',
   },
+  nombrePasada: {
+    color: '#9ca3af',
+  },
   coachRow: {
     flexDirection: 'row',
     alignItems:    'center',
     gap:           5,
   },
   coachAvatar: {
-    width:          18,
-    height:         18,
-    borderRadius:   9,
+    width:           18,
+    height:          18,
+    borderRadius:    9,
     backgroundColor: '#f1f5f9',
-    alignItems:     'center',
-    justifyContent: 'center',
+    alignItems:      'center',
+    justifyContent:  'center',
   },
   coachAvatarReservada: {
     backgroundColor: '#1e3a5f',
@@ -257,6 +303,41 @@ const s = StyleSheet.create({
     fontSize:   11,
     fontFamily: 'Gotham_700Bold',
     color:      '#f59e0b',
+  },
+  badgePasada: {
+    backgroundColor:   '#f1f5f9',
+    borderRadius:      20,
+    paddingVertical:   3,
+    paddingHorizontal: 8,
+  },
+  badgePasadaText: {
+    fontSize:      9,
+    fontFamily:    'Gotham_700Bold',
+    color:         '#9ca3af',
+    letterSpacing: 1,
+  },
+  badgeEnCurso: {
+    flexDirection:     'row',
+    alignItems:        'center',
+    gap:               4,
+    backgroundColor:   'rgba(34,197,94,0.1)',
+    borderRadius:      20,
+    paddingVertical:   3,
+    paddingHorizontal: 8,
+    borderWidth:       1,
+    borderColor:       'rgba(34,197,94,0.3)',
+  },
+  badgeEnCursoText: {
+    fontSize:      9,
+    fontFamily:    'Gotham_700Bold',
+    color:         '#22c55e',
+    letterSpacing: 1,
+  },
+  puntito: {
+    width:           6,
+    height:          6,
+    borderRadius:    3,
+    backgroundColor: '#22c55e',
   },
   spotsRow: {
     flexDirection: 'row',
