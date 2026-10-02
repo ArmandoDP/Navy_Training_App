@@ -48,6 +48,7 @@ export default function CrearCuentaScreen() {
   // ── Step 2 → 3: crear usuario y enviar OTP
   const handleEnviarOtp = async () => {
     setLoading(true)
+    console.log('Backend URL:', process.env.EXPO_PUBLIC_BACKEND_URL) // ← aquí
     try {
       const { data: existe } = await supabase
         .from('clientes').select('id').eq('email', form.email).maybeSingle()

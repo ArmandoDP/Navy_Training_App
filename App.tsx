@@ -153,6 +153,7 @@ export default function App() {
       setSession(session)
       if (event === 'SIGNED_IN')  setShowBienvenido(true)
       if (event === 'SIGNED_OUT') setShowBienvenido(false)
+      if (event === 'TOKEN_REFRESHED') setSession(session)
     })
   }, [])
 
@@ -171,6 +172,8 @@ export default function App() {
   }, [])
 
   if (!ready || !fontsLoaded) return null
+
+  console.log('Session en App:', session?.user?.email)
 
   return (
     <SafeAreaProvider>
