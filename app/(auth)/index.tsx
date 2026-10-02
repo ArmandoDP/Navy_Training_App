@@ -45,6 +45,10 @@ export default function WelcomeScreen() {
           const emailGuardado = await SecureStore.getItemAsync('navy_last_email')
           const emailCheck = session?.user?.email || emailGuardado
           if (!emailCheck) { setBioActivada(false); return }
+
+          const accessToken = await SecureStore.getItemAsync('navy_access_token')
+          if (!accessToken) { setBioActivada(false); return }
+
           const { data: cli } = await supabase.from('clientes')
             .select('bio_activada').eq('email', emailCheck).single()
           setBioActivada(cli?.bio_activada || false)
@@ -132,7 +136,7 @@ export default function WelcomeScreen() {
       await SecureStore.setItemAsync('navy_access_token', session.access_token)
       await SecureStore.setItemAsync('navy_refresh_token', session.refresh_token || '')
     }
-    
+
     setLoading(false)
     closeSheet()
   }
