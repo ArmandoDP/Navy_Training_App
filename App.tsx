@@ -122,6 +122,7 @@ export default function App() {
   const [session,        setSession]        = useState<any>(null)
   const [ready,          setReady]          = useState(false)
   const [showBienvenido, setShowBienvenido] = useState(false)
+  const [showWelcome,    setShowWelcome]    = useState(true)  // ← siempre arranca en index
   const navigationRef = useRef<NavigationContainerRef<any>>(null)
 
   const [fontsLoaded] = Font.useFonts({
@@ -151,9 +152,18 @@ export default function App() {
 
     supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
-      if (event === 'SIGNED_IN')      setShowBienvenido(true)
-      if (event === 'TOKEN_REFRESHED') setShowBienvenido(true) // ← agrega
-      if (event === 'SIGNED_OUT')     setShowBienvenido(false)
+      if (event === 'SIGNED_IN') {
+        setShowWelcome(false)
+        setShowBienvenido(true)
+      }
+      if (event === 'TOKEN_REFRESHED') {
+        setShowWelcome(false)
+        setShowBienvenido(true)
+      }
+      if (event === 'SIGNED_OUT') {
+        setShowBienvenido(false)
+        setShowWelcome(true)  // ← vuelve al index al cerrar sesión
+      }
     })
   }, [])
 
@@ -173,23 +183,12 @@ export default function App() {
 
   if (!ready || !fontsLoaded) return null
 
-  console.log('Session en App:', session?.user?.email)
-
   return (
     <SafeAreaProvider>
       <NavigationContainer ref={navigationRef}>
         <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
-          {session ? (
-            <>
-              {showBienvenido ? (
-                <Stack.Screen name="Bienvenido">
-                  {() => <BienvenidoScreen onContinuar={() => setShowBienvenido(false)} />}
-                </Stack.Screen>
-              ) : (
-                <Stack.Screen name="Main" component={MainTabsWrapper} />
-              )}
-            </>
-          ) : (
+          {showWelcome ? (
+            // Siempre muestra el index primero
             <>
               <Stack.Screen name="Welcome"           component={WelcomeScreen} />
               <Stack.Screen name="Login"             component={LoginScreen} />
@@ -197,6 +196,12 @@ export default function App() {
               <Stack.Screen name="RecuperarPassword" component={RecuperarPasswordScreen} />
               <Stack.Screen name="NuevaPassword"     component={NuevaPasswordScreen} />
             </>
+          ) : showBienvenido ? (
+            <Stack.Screen name="Bienvenido">
+              {() => <BienvenidoScreen onContinuar={() => setShowBienvenido(false)} />}
+            </Stack.Screen>
+          ) : (
+            <Stack.Screen name="Main" component={MainTabsWrapper} />
           )}
         </Stack.Navigator>
       </NavigationContainer>

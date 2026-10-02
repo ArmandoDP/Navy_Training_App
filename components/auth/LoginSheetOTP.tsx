@@ -38,7 +38,19 @@ export default function LoginSheetOTP({ email, otp, loading, error, onChangeOtp,
             ref={el => { inputsRef.current[i] = el }}
             style={[s.otpInput, digit ? s.otpInputFilled : null, error ? s.otpInputError : null]}
             value={digit}
-            onChangeText={v => onChangeOtp(i, v)}
+            onChangeText={v => {
+                const digits = v.replace(/\D/g, '')
+                if (digits.length > 1) {
+                    // Pegaron varios dígitos — distribuir
+                    const arr = digits.slice(0, 6).split('')
+                    const newOtp = ['', '', '', '', '', '']
+                    arr.forEach((d, idx) => { newOtp[idx] = d })
+                    arr.forEach((_, idx) => onChangeOtp(idx, arr[idx] || ''))
+                    if (arr.length === 6) onVerificar(arr.join(''))
+                    return
+                }
+                onChangeOtp(i, v)
+            }}
             onKeyPress={({ nativeEvent }) => onKeyDown(i, nativeEvent.key)}
             keyboardType="numeric"
             maxLength={1}
