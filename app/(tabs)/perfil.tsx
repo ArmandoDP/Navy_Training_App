@@ -29,6 +29,7 @@ export default function PerfilScreen() {
   const [reservasCount, setReservasCount] = useState(0)
   const [ultimoPago,    setUltimoPago]    = useState<any>(null)
   const [loading,       setLoading]       = useState(true)
+  const [reservasProximas, setReservasProximas] = useState<any[]>([])
 
   const fetchData = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -60,13 +61,13 @@ export default function PerfilScreen() {
       .single()
     setMembresiaCola(cola || null)
 
-    const { count } = await supabase
+    const { data: reservas } = await supabase
       .from('reservas')
-      .select('id', { count: 'exact' })
+      .select('id, estatus, clases(nombre_clase, horario)')
       .eq('cliente_id', cli?.id)
       .eq('estatus', 'Confirmada')
       .gte('created_at', new Date().toISOString())
-    setReservasCount(count || 0)
+    setReservasProximas(reservas || [])
 
     const { data: pago } = await supabase
       .from('pagos')
@@ -180,6 +181,8 @@ export default function PerfilScreen() {
           tienePlan={!!membresia}
           reservasCount={reservasCount}
           ultimoPago={ultimoPago}
+          cliente={cliente}          // ← nuevo
+          reservas={reservasProximas}  // ← nuevo (las reservas futuras que ya traes)
         />
 
         <View style={{ height: 100 }} />

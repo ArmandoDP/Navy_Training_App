@@ -151,9 +151,9 @@ export default function App() {
 
     supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
-      if (event === 'SIGNED_IN')  setShowBienvenido(true)
-      if (event === 'SIGNED_OUT') setShowBienvenido(false)
-      if (event === 'TOKEN_REFRESHED') setSession(session)
+      if (event === 'SIGNED_IN')      setShowBienvenido(true)
+      if (event === 'TOKEN_REFRESHED') setShowBienvenido(true) // ← agrega
+      if (event === 'SIGNED_OUT')     setShowBienvenido(false)
     })
   }, [])
 
