@@ -3,20 +3,36 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons'
 
 interface Props {
-  email:     string
-  otp:       string[]
-  loading:   boolean
-  error:     string
-  onChangeOtp: (index: number, value: string) => void
-  onKeyDown:   (index: number, key: string) => void
-  onVerificar: (code?: string) => void
-  onReenviar:  () => void
-  onClose:     () => void
+  email:           string
+  otp:             string[]
+  loading:         boolean
+  error:           string
+  onChangeOtp:     (index: number, value: string) => void
+  onKeyDown:       (index: number, key: string) => void
+  onVerificar:     (code?: string) => void
+  onReenviar:      () => void
+  onClose:         () => void
   onCambiarCorreo: () => void
-  inputsRef:   React.MutableRefObject<(TextInput | null)[]>
+  onPaste:         (newOtp: string[]) => void
+  inputsRef:       React.MutableRefObject<(TextInput | null)[]>
 }
 
-export default function LoginSheetOTP({ email, otp, loading, error, onChangeOtp, onKeyDown, onVerificar, onReenviar, onClose, onCambiarCorreo, inputsRef }: Props) {
+export default function LoginSheetOTP({ email, otp, loading, error, onChangeOtp, onVerificar, onReenviar, onClose, onCambiarCorreo, onPaste, inputsRef }: Props) {
+  const hiddenRef = useRef<TextInput>(null)
+  const hiddenValue = useRef('')
+
+  const handleHiddenChange = (v: string) => {
+    const digits = v.replace(/\D/g, '').slice(0, 6)
+    hiddenValue.current = digits
+    const arr = digits.split('')
+    const newOtp = ['', '', '', '', '', '']
+    arr.forEach((d, i) => { newOtp[i] = d })
+    onPaste(newOtp)
+    if (digits.length === 6) {
+      onVerificar(digits)
+    }
+  }
+
   return (
     <>
       <View style={s.sheetHeader}>
@@ -31,34 +47,36 @@ export default function LoginSheetOTP({ email, otp, loading, error, onChangeOtp,
         </TouchableOpacity>
       </View>
 
-      <View style={s.otpRow}>
-        {otp.map((digit, i) => (
-          <TextInput
-            key={i}
-            ref={el => { inputsRef.current[i] = el }}
-            style={[s.otpInput, digit ? s.otpInputFilled : null, error ? s.otpInputError : null]}
-            value={digit}
-            onChangeText={v => {
-                const digits = v.replace(/\D/g, '')
-                if (digits.length > 1) {
-                    // Pegaron varios dígitos — distribuir
-                    const arr = digits.slice(0, 6).split('')
-                    const newOtp = ['', '', '', '', '', '']
-                    arr.forEach((d, idx) => { newOtp[idx] = d })
-                    arr.forEach((_, idx) => onChangeOtp(idx, arr[idx] || ''))
-                    if (arr.length === 6) onVerificar(arr.join(''))
-                    return
-                }
-                onChangeOtp(i, v)
-            }}
-            onKeyPress={({ nativeEvent }) => onKeyDown(i, nativeEvent.key)}
-            keyboardType="numeric"
-            maxLength={1}
-            textAlign="center"
-            selectTextOnFocus
-          />
-        ))}
-      </View>
+      {/* Input invisible que captura el texto */}
+      <TextInput
+        ref={hiddenRef}
+        style={s.hiddenInput}
+        value={otp.join('')}
+        onChangeText={handleHiddenChange}
+        keyboardType="numeric"
+        maxLength={6}
+        autoFocus={false}
+        caretHidden
+      />
+
+      {/* Cajas visuales */}
+      <TouchableOpacity activeOpacity={1} onPress={() => hiddenRef.current?.focus()}>
+        <View style={s.otpRow}>
+          {otp.map((digit, i) => (
+            <View
+              key={i}
+              style={[
+                s.otpBox,
+                digit ? s.otpBoxFilled : null,
+                error ? s.otpBoxError : null,
+              ]}>
+              <Text style={[s.otpDigit, digit ? s.otpDigitFilled : null]}>
+                {digit || ''}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </TouchableOpacity>
 
       {error ? (
         <View style={[s.errorRow, { justifyContent: 'center', marginBottom: 12 }]}>
@@ -94,10 +112,13 @@ const s = StyleSheet.create({
   sheetTitulo:   { fontSize: 22, fontFamily: 'Gotham_700Bold', color: '#111' },
   sheetSub:      { fontSize: 13, color: '#9ca3af', fontFamily: 'Gotham_400Regular', marginTop: 4, lineHeight: 20 },
   closeBtn:      { width: 32, height: 32, borderRadius: 16, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  hiddenInput:   { position: 'absolute', opacity: 0, width: 1, height: 1 },
   otpRow:        { flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 16 },
-  otpInput:      { width: 46, height: 56, borderRadius: 14, backgroundColor: '#f3f4f6', borderWidth: 2, borderColor: '#e5e7eb', fontSize: 22, fontFamily: 'Gotham_700Bold', color: '#111', textAlign: 'center' },
-  otpInputFilled:{ backgroundColor: '#171B24', borderColor: '#171B24', color: '#fff' },
-  otpInputError: { borderColor: '#fca5a5', backgroundColor: '#fff5f5' },
+  otpBox:        { width: 46, height: 56, borderRadius: 14, backgroundColor: '#f3f4f6', borderWidth: 2, borderColor: '#e5e7eb', alignItems: 'center', justifyContent: 'center' },
+  otpBoxFilled:  { backgroundColor: '#171B24', borderColor: '#171B24' },
+  otpBoxError:   { borderColor: '#fca5a5', backgroundColor: '#fff5f5' },
+  otpDigit:      { fontSize: 22, fontFamily: 'Gotham_700Bold', color: '#111' },
+  otpDigitFilled:{ color: '#fff' },
   otpExpira:     { fontSize: 12, color: '#9ca3af', fontFamily: 'Gotham_400Regular', textAlign: 'center', marginBottom: 16 },
   errorRow:      { flexDirection: 'row', alignItems: 'center', gap: 6 },
   errorText:     { fontSize: 13, color: '#ef4444', fontFamily: 'Gotham_400Regular' },

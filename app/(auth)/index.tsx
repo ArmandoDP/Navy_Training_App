@@ -33,6 +33,7 @@ export default function WelcomeScreen() {
   const inputsRef = useRef<(TextInput | null)[]>([])
   const contentY  = useRef(new Animated.Value(0)).current
   const scaleAnim = useRef(new Animated.Value(1)).current
+  
 
   useFocusEffect(
     useCallback(() => {
@@ -110,6 +111,8 @@ export default function WelcomeScreen() {
     setLoading(false)
     setTimeout(() => inputsRef.current[0]?.focus(), 400)
   }
+
+  const handlePaste = (newOtp: string[]) => setOtp(newOtp)
 
   const handleVerificarOtp = async (code?: string) => {
     const token = code || otp.join('')
@@ -236,6 +239,7 @@ export default function WelcomeScreen() {
                   onReenviar={handleEnviarOtp}
                   onClose={closeSheet}
                   onCambiarCorreo={() => { setPasoLogin('correo'); setOtp(['', '', '', '', '', '']); setError('') }}
+                  onPaste={handlePaste}
                 />
               )}
               <View style={{ height: 20 }} />
