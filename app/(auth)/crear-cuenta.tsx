@@ -58,21 +58,22 @@ export default function CrearCuentaScreen() {
         return
       }
 
-      const { data: cli, error: cliErr } = await supabase.from('clientes').insert({
-        nombre_completo:     form.nombre,
-        email:               form.email,
-        telefono:            form.telefono,
-        sucursal_id:         form.sucursal_id,
-        estatus:             'Activo',
-        origen:              'App',
-        acepto_terminos:     form.terminos,
-        acepto_privacidad:   form.privacidad,
-        fecha_alta_original: new Date().toISOString().split('T')[0],
-        debe_cambiar_password: false,
-      }).select().single()
-
-      if (cliErr) throw new Error(cliErr.message)
-      setUserId(cli.id)
+      const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/clientes/crear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre:              form.nombre,
+          email:               form.email,
+          telefono:            form.telefono,
+          sucursal_id:         form.sucursal_id,
+          acepto_terminos:     form.terminos,
+          acepto_privacidad:   form.privacidad,
+          fecha_alta_original: new Date().toISOString().split('T')[0],
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Error al crear cuenta')
+      setUserId(data.id)
 
       const { error: otpErr } = await supabase.auth.signInWithOtp({
         email: form.email,
