@@ -301,37 +301,46 @@ export default function ReservarScreen() {
 
     haptic.success()
 
-    // Actualizar Wellhub
-    if (claseActiva.wellhub_slot_id && claseActiva.wellhub_class_id) {
-      try {
-        await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/wellhub/actualizar-cupos`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            slot_id:      claseActiva.wellhub_slot_id,
-            clase_id:     claseActiva.wellhub_class_id,
-            total_booked: reservasActivas + 1,
-            sucursal_id:  claseActiva.sucursal_id,
-          }),
-        })
-      } catch (e) { console.warn('Error actualizando Wellhub:', e) }
-    }
+    // // Actualizar Wellhub
+    // if (claseActiva.wellhub_slot_id && claseActiva.wellhub_class_id) {
+    //   try {
+    //     await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/wellhub/actualizar-cupos`, {
+    //       method:  'POST',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify({
+    //         slot_id:      claseActiva.wellhub_slot_id,
+    //         clase_id:     claseActiva.wellhub_class_id,
+    //         total_booked: reservasActivas + 1,
+    //         sucursal_id:  claseActiva.sucursal_id,
+    //       }),
+    //     })
+    //   } catch (e) { console.warn('Error actualizando Wellhub:', e) }
+    // }
 
-    // Actualizar TotalPass
-    if (claseActiva.totalpass_occurrence_uuid) {
-      try {
-        await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/totalpass-booking/actualizar-cupos`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            occurrence_uuid: claseActiva.totalpass_occurrence_uuid,
-            sucursal_id:     claseActiva.sucursal_id,
-            slots:           claseActiva.capacidad_max - (reservasActivas + 1),
-          }),
-        })
-      } catch (e) { console.warn('Error actualizando TotalPass:', e) }
-    }
+    // // Actualizar TotalPass
+    // if (claseActiva.totalpass_occurrence_uuid) {
+    //   try {
+    //     await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/totalpass-booking/actualizar-cupos`, {
+    //       method:  'POST',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify({
+    //         occurrence_uuid: claseActiva.totalpass_occurrence_uuid,
+    //         sucursal_id:     claseActiva.sucursal_id,
+    //         slots:           claseActiva.capacidad_max - (reservasActivas + 1),
+    //       }),
+    //     })
+    //   } catch (e) { console.warn('Error actualizando TotalPass:', e) }
+    // }
 
+    // Sincronizar cupos en Supabase, Wellhub y TotalPass
+    try {
+      await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/sync/cupos`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ clase_id: claseActiva.id }),
+      })
+    } catch (e) { console.warn('Error sincronizando cupos:', e) }
+    
     // Notificación + correo + QR
     try {
       await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/reservas/confirmar-notificacion`, {
